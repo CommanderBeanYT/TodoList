@@ -19,7 +19,7 @@ def index():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        due_date = request.form.get('due-date')
+        due_date = request.form.get('real-due-date')
 
         print(due_date)
 

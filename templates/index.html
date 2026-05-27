@@ -13,9 +13,17 @@
             <div>
                 <h1>Todo</h1>
                 <form id="new-task" method="POST">
-                    <label for="title">Title:</label><input id="title" name="title" type="text" class="form-control" placeholder="Finish Homework" required="required">
-                    <label for="description">Short description:</label><input id="description" name="description" type="text" class="form-control" placeholder="Read chapter 3 and answer up to question 5">
-                    <label for="due-date">Due Date:</label><input id="due-date" name="due-date" class="form-control col-md-2" type="datetime-local">
+                    <label for="title">Title:</label>
+                    <input id="title" name="title" type="text" class="form-control" placeholder="Finish Homework" required="required">
+
+                    <label for="description">Short description:</label>
+                    <input id="description" name="description" type="text" class="form-control" placeholder="Read chapter 3 and answer up to question 5">
+
+                    <label for="due-date">Due Date:</label>
+                    <input id="due-date" class="form-control col-md-2" type="datetime-local">
+
+                    <input type="hidden" id="real-due-date" name="real-due-date">
+
                     <button type="submit">Add</button>
                 </form>
                 {% for task in list %}
@@ -25,7 +33,7 @@
                             <div>
                                 <h2>{{ task.title }}</h2>
                                 <p><i>{{ task.description }}</i></p>
-                                <p><strong>Due in 3 days</strong></p>
+                                {% if task.due_date != None %}<p><strong><span class="countdown" data-due="{{ task.due_date }}">Calculating...</span></strong></p>{% endif %}
                             </div>
                         </div>
                         <button id={{ task.id }} class="btn btn-outline-danger btn-sm remove">-</button>
