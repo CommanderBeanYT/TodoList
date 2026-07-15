@@ -1,3 +1,21 @@
+:root {
+    --bg-color: #ffffff;
+    --text-color: #1a1a1a;
+    --link-color: #0066cc;
+    --text-color-2: #4B4B4B;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --text-color: #ffffff;
+        --link-color: #4da6ff;
+        --text-color-2: #9  69696;
+    }
+}
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
 * {
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -10,7 +28,10 @@ p {
     margin-right: 15px;
      */
     margin-bottom: 0px;
-    color: rgb(75,75,75);
+    color: var(--text-color-2);
+}
+a {
+    color: var(--link-color)
 }
 .checkbox {
     height: 50px !important;
@@ -23,3 +44,4 @@ p {
     width: 30px;
     height: 30px;
 }
+
