@@ -21,19 +21,67 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     removeButtons.forEach(button => {
-        button.addEventListener('click', function(event) {
-            // once user clicks a remove button remove it from the database
+        button.addEventListener('click', async function(event) {
+            const taskId = this.id;
+            
+            console.log(taskId);
 
-            fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${this.id}`, {
-                method: 'DELETE',
-                headers: {
-                    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                    "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                    "Content-Type": "application/json"
+            try {
+                // GET the exact data for this task from the Tasks table
+                const response = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${taskId}`, {
+                    method: 'GET',
+                    headers: {
+                        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                    }
+                });
+                if (!response.ok)
+                {
+                    const errorMessage = await response.text();
+                    throw new Error(`Failed to get task (${response.status}): ${errorMessage}`);
                 }
-            }).then(
-                button.parentElement.remove()
-            )
+                const data = await response.json()
+                console.log(data);
+                // Supabase returns an array, so we grab the first item [0]
+                const taskData = data[0];
+
+                // Remove the old ID so the task table can generate its own fresh ID
+                delete taskData.id;
+
+                // POST the data into the tasks table
+                const postresponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Archived_Tasks`, {
+                    method: 'POST',
+                    headers: {
+                        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                if (!postresponse.ok)
+                {
+                    const errorMessage = await postresponse.text();
+                    throw new Error(`Failed to copy to archive (${postresponse.status}): ${errorMessage}`);
+                }
+                // DELETE the task from the task table
+                const deleteResponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${taskId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8"
+                    }
+                });
+                if (!deleteResponse.ok)
+                {
+                    const errorMessage = await deleteResponse.text();
+                    throw new Error(`Failed to delete task (${deleteResponse.status}): ${errorMessage}`);
+                }
+
+                button.parentElement.remove();
+            } catch (error)
+            {
+                console.error("Error archiving task: ",error)
+            }
         });
     });
 
@@ -110,5 +158,5 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCountdowns();
 
     // Refresh the countdowns every 60 seconds so the time stays accurate
-    setInterval(updateCountdowns, 60000)    ;
+    setInterval(updateCountdowns, 60000);
 });

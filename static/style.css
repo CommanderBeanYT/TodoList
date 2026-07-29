@@ -41,7 +41,16 @@ a {
     accent-color: #20ac20;
 }
 .remove {
-    width: 30px;
     height: 30px;
 }
-
+.centered{
+    text-align: center !important;
+}
+.inline {
+    display: inline;
+}
+.inline-container {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+}
