@@ -1,5 +1,5 @@
 import requests
-
+from datetime import datetime, timezone
 from flask import Flask, render_template, request, redirect, url_for
 
 url = "https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks"
@@ -21,6 +21,16 @@ def get_archive():
     response = requests.get(url=urlarc, headers=headers)
     return response.json()
 
+def sort_list(key):
+    # if task is done it can't be overdue, otherwise check due date against device time with timezone
+    overdue = (datetime.fromisoformat(key['due_date']) < datetime.now(timezone.utc)) if not key['completed'] else False
+    timefromnow = abs(datetime.fromisoformat(key['due_date']) - datetime.now(timezone.utc))
+
+    return(
+        key['completed'],
+        overdue,
+        timefromnow,
+    )
 @app.route("/", methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -45,6 +55,7 @@ def index():
     if not offline:
         tasks = get_list()
         print(tasks)
+        tasks.sort(key=sort_list)
         return render_template("index.html", list=tasks)
     else:
         return render_template("index.html", list=defaultList)
