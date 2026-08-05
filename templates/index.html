@@ -31,7 +31,7 @@
                     <h2>Nothing here.</h2>
                     <h3>Either everything is done or something is very wrong</h3>
                 {% else %}
-                    <button id="archive-all" class="btn btn-outline-danger btn-sm remove">Archive Completed</button>
+                    <button id="archive-all" class="btn btn-outline-danger btn-sm">Archive Completed</button>
                     <!--Normal Version-->
                     {% for task in list %}
                         <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -89,6 +89,7 @@
                     {% endfor %}
                     </details>-->
                 {% endif %}
+                <a href="{{ url_for('archive') }}">Archive</a>
             </div>
         </div>
     </div>

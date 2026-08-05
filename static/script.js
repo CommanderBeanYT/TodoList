@@ -1,3 +1,61 @@
+async function archiveTask(taskId)
+{
+    try {
+        // GET the exact data for this task from the Tasks table
+        const response = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${taskId}`, {
+            method: 'GET',
+            headers: {
+                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+            }
+        });
+        if (!response.ok)
+        {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to get task (${response.status}): ${errorMessage}`);
+        }
+        const data = await response.json()
+        console.log(data);
+        // Supabase returns an array, so we grab the first item [0]
+        const taskData = data[0];
+
+        // Remove the old ID so the task table can generate its own fresh ID
+        delete taskData.id;
+
+        // POST the data into the tasks table
+        const postresponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Archived_Tasks`, {
+            method: 'POST',
+            headers: {
+                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(taskData)
+        });
+        if (!postresponse.ok)
+        {
+            const errorMessage = await postresponse.text();
+            throw new Error(`Failed to copy to archive (${postresponse.status}): ${errorMessage}`);
+        }
+        // DELETE the task from the task table
+        const deleteResponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8"
+            }
+        });
+        if (!deleteResponse.ok)
+        {
+            const errorMessage = await deleteResponse.text();
+            throw new Error(`Failed to delete task (${deleteResponse.status}): ${errorMessage}`);
+        }
+    } catch (error)
+    {
+        console.error("Error archiving task: ", error)
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const checkButtons = document.querySelectorAll('.checkbox'); //get all checkboxes
     const removeButtons = document.querySelectorAll('.remove'); //get all remove buttons
@@ -22,68 +80,79 @@ document.addEventListener('DOMContentLoaded', function() {
 
     removeButtons.forEach(button => {
         button.addEventListener('click', async function(event) {
-            const taskId = this.id;
-            
-            console.log(taskId);
-
-            try {
-                // GET the exact data for this task from the Tasks table
-                const response = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${taskId}`, {
-                    method: 'GET',
-                    headers: {
-                        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                    }
-                });
-                if (!response.ok)
-                {
-                    const errorMessage = await response.text();
-                    throw new Error(`Failed to get task (${response.status}): ${errorMessage}`);
-                }
-                const data = await response.json()
-                console.log(data);
-                // Supabase returns an array, so we grab the first item [0]
-                const taskData = data[0];
-
-                // Remove the old ID so the task table can generate its own fresh ID
-                delete taskData.id;
-
-                // POST the data into the tasks table
-                const postresponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Archived_Tasks`, {
-                    method: 'POST',
-                    headers: {
-                        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(taskData)
-                });
-                if (!postresponse.ok)
-                {
-                    const errorMessage = await postresponse.text();
-                    throw new Error(`Failed to copy to archive (${postresponse.status}): ${errorMessage}`);
-                }
-                // DELETE the task from the task table
-                const deleteResponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?id=eq.${taskId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
-                        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8"
-                    }
-                });
-                if (!deleteResponse.ok)
-                {
-                    const errorMessage = await deleteResponse.text();
-                    throw new Error(`Failed to delete task (${deleteResponse.status}): ${errorMessage}`);
-                }
-
-                button.parentElement.remove();
-            } catch (error)
-            {
-                console.error("Error archiving task: ",error)
-            }
+            this.textContent = "Archiving...";
+            this.disabled = true;
+            await archiveTask(this.id);
+            button.parentElement.remove();
         });
     });
+
+    document.getElementById("archive-all").addEventListener("click", async function(event)
+    {
+        try {
+            this.textContent = "Archiving Completed...";
+            this.disabled = true;
+        // GET the exact data for this task from the Tasks table
+        const response = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?completed=eq.true`, {
+            method: 'GET',
+            headers: {
+                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+            }
+        });
+        if (!response.ok)
+        {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to get tasks (${response.status}): ${errorMessage}`);
+        }
+        const completedTasks = await response.json();
+        console.log(completedTasks);
+
+        if (completedTasks.length === 0)
+        {
+            console.log("No completed tasks");
+        }
+
+        const tasksToArchive = completedTasks.map(task => {
+            const { id, ...rest } = task;
+            return rest;
+        });
+
+        // POST the data into the tasks table
+        const postresponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Archived_Tasks`, {
+            method: 'POST',
+            headers: {
+                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(tasksToArchive)
+        });
+        if (!postresponse.ok)
+        {
+            const errorMessage = await postresponse.text();
+            throw new Error(`Failed to copy to archive (${postresponse.status}): ${errorMessage}`);
+        }
+        // DELETE the task from the task table
+        const deleteResponse = await fetch(`https://szxaarjqdvgbsmmmernl.supabase.co/rest/v1/Tasks?completed=eq.tru`, {
+            method: 'DELETE',
+            headers: {
+                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8",
+                "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6eGFhcmpxZHZnYnNtbW1lcm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTM5NzUsImV4cCI6MjA5MzQ4OTk3NX0.gZokTd52piQIsrr_NpgPgqB_PPt0PguuPwSggYMoyc8"
+            }
+        });
+        if (!deleteResponse.ok)
+        {
+            const errorMessage = await deleteResponse.text();
+            throw new Error(`Failed to delete task (${deleteResponse.status}): ${errorMessage}`);
+        }
+        } catch (error)
+        {
+            console.error("Error archiving task: ", error)
+        }
+        location.reload(); // refresh because it is easier than looping through all tasks in the list to find and removed all of the completed ones
+    }
+    );
 
     // --- TIMEZONE SUBMISSION FIX ---
     const form = document.getElementById("new-task");
